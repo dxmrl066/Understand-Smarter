@@ -1,0 +1,154 @@
+<%- include('../partials/header', { page: 'study-tools', title: 'Study Tools', description: 'Practical tools for calm, steady learning.' }) %>
+
+<section class="hero-card compact">
+  <div class="hero-copy">
+    <p class="eyebrow">Study tools</p>
+    <h1>Steady progress starts with a playful plan</h1>
+    <p>Use the interactive cards below to set a study routine, preview a quick quiz, and watch progress grow with streaks, badges, and friendly reminders.</p>
+  </div>
+</section>
+
+<section class="section-grid">
+  <article class="card tool-card">
+    <div class="tool-head">
+      <div>
+        <p class="eyebrow">Study reminders</p>
+        <h3>Add and track study goals</h3>
+      </div>
+      <div class="streak-chip" id="study-streak-chip">
+        <span class="bubble-dot"></span>
+        <strong id="goal-completion-count">0</strong> completed
+      </div>
+    </div>
+
+    <form id="goal-form" class="tool-form">
+      <label>
+        Study goal
+        <input type="text" id="goal-input" placeholder="e.g. Review chapter 3, Practice coding problems" />
+      </label>
+      <div class="form-actions">
+        <button type="button" class="pill-button small" id="add-goal-btn">Add goal +10 XP</button>
+      </div>
+    </form>
+
+    <div class="goals-panel">
+      <div class="goals-header">
+        <h4>Your goals</h4>
+        <span class="mini-pill" id="goals-status">No goals yet</span>
+      </div>
+      <ul id="goals-list" class="goals-list">
+        <li class="empty-state">No goals yet. Add one to start earning XP!</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="card tool-card">
+    <div class="tool-head">
+      <div>
+        <p class="eyebrow">Quiz generation</p>
+        <h3>Earn XP through practice quizzes.</h3>
+      </div>
+      <div class="badge-pill" id="quiz-badge-pill">Test your knowledge</div>
+    </div>
+
+    <form id="quiz-form" class="tool-form">
+      <label>
+        Topic
+        <input type="text" id="quiz-topic" placeholder="e.g. Circuits, Calculus, Python" />
+      </label>
+      <label>
+        Difficulty
+        <select id="quiz-difficulty">
+          <option value="easy">Easy (5 XP per correct)</option>
+          <option value="medium" selected>Medium (10 XP per correct)</option>
+          <option value="hard">Hard (15 XP per correct)</option>
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="pill-button small" id="quiz-generate-btn">Start quiz</button>
+      </div>
+    </form>
+
+    <div class="quiz-hint">
+      <p>Choose a topic and difficulty. Earn XP for each correct answer!</p>
+    </div>
+  </article>
+
+  <article class="card tool-card">
+    <div class="tool-head">
+      <div>
+        <p class="eyebrow">Progress tracker</p>
+        <h3>Watch your effort add up.</h3>
+      </div>
+      <div class="stat-pill">
+        <strong id="current-level">Level 1</strong>
+      </div>
+    </div>
+
+    <div class="progress-card">
+      <div class="progress-ring" id="progress-ring" data-target="0">
+        <span id="progress-value">0%</span>
+      </div>
+      <div class="progress-meta">
+        <div class="mini-card stat-card">
+          <span class="stat-label">XP</span>
+          <strong id="xp-points">0</strong> / <span id="xp-needed">100</span>
+        </div>
+        <div class="mini-card stat-card">
+          <span class="stat-label">Badges</span>
+          <strong id="badge-count">0</strong>
+        </div>
+        <div class="mini-card stat-card">
+          <span class="stat-label">Total activities</span>
+          <strong id="activity-count">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-chip" id="next-badge-chip">
+        <strong>100</strong> XP to unlock badge
+      </div>
+      <div class="stat-chip">
+        <strong id="completed-goals">0</strong> goals completed
+      </div>
+      <div class="stat-chip">
+        <strong id="quizzes-taken">0</strong> quizzes taken
+      </div>
+    </div>
+    <p class="milestone-message" id="milestone-message">Complete study goals and quizzes to earn XP and unlock badges!</p>
+  </article>
+</section>
+
+<div class="modal hidden" id="quiz-modal" role="dialog" aria-modal="true" aria-labelledby="quiz-modal-title">
+  <div class="modal-backdrop" id="quiz-modal-backdrop"></div>
+  <div class="modal-content">
+    <button class="modal-close" id="quiz-modal-close" aria-label="Close quiz preview">&times;</button>
+    <div class="modal-body">
+      <p class="eyebrow">Quiz challenge</p>
+      <h2 id="quiz-modal-title">Ready for a quick challenge?</h2>
+      <p id="quiz-modal-description">A short quiz appears here once you choose a topic and difficulty.</p>
+      <ol id="quiz-question-list" class="quiz-list"></ol>
+      <div class="result-panel hidden" id="quiz-result-panel">
+        <p class="result-score" id="quiz-score-text">Score: 0 / 3</p>
+        <p id="quiz-xp-earned">XP earned: 0</p>
+        <p id="quiz-badge-message">Great effort!</p>
+      </div>
+      <div class="modal-actions">
+        <button class="pill-button small" id="finish-quiz-btn">Submit answers</button>
+        <button class="pill-button small secondary hidden" id="close-result-btn">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section-block">
+  <h2>Badges unlock at</h2>
+  <div class="feature-list" id="badge-milestones">
+    <div class="feature-pill" id="badge-100">🎯 100 XP</div>
+    <div class="feature-pill" id="badge-250">⭐ 250 XP</div>
+    <div class="feature-pill" id="badge-500">👑 500 XP</div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

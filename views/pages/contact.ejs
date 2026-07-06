@@ -1,0 +1,56 @@
+<%- include('../partials/header', { page: 'contact', title: 'Contact & Feedback', description: 'Share feedback or ask for help.' }) %>
+
+<section class="hero-card compact">
+  <div class="hero-copy">
+    <p class="eyebrow">Feedback matters</p>
+    <h1>Tell us what helps you learn</h1>
+    <p>Use this contact form to share feedback, ask questions, or suggest topics you would like to see on the site.</p>
+  </div>
+</section>
+
+<section class="section-grid">
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="card success-card">
+      <p><strong>Successfully submitted.</strong> Thank you for your message.</p>
+    </div>
+  <% } %>
+  <% if (typeof errors !== 'undefined' && errors && errors.length) { %>
+    <div class="card error-card">
+      <p><strong>Please fix the following:</strong></p>
+      <ul>
+        <% errors.forEach(error => { %>
+          <li><%= error %></li>
+        <% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form class="card form-card" action="/contact" method="post">
+    <label>
+      Name
+      <input type="text" name="name" placeholder="Your name" value="<%= (typeof values !== 'undefined' && values.name) ? values.name : '' %>" />
+    </label>
+    <label>
+      Email
+      <input type="email" name="email" placeholder="you@example.com" value="<%= (typeof values !== 'undefined' && values.email) ? values.email : '' %>" />
+    </label>
+    <label>
+      Message
+      <textarea name="message" rows="4" placeholder="Share feedback or a topic you want explained"><%= (typeof values !== 'undefined' && values.message) ? values.message : '' %></textarea>
+    </label>
+    <button class="pill-button" type="submit">Send feedback</button>
+    <p class="muted">This form is part of the landing page experience while the AI support remains available through Telegram.</p>
+  </form>
+
+  <div class="card">
+    <h3>Support Channels</h3>
+    <ul class="stack-list">
+      <li>💬 <strong>AI Assistant</strong><br><span class="muted">Available for learning support and explanations.</span></li>
+      <li>📱 <strong>Telegram Bot</strong><br><a href="https://t.me/studybuddy_irdina_bot" target="_blank" rel="noopener">@studybuddy_irdina_bot</a></li>
+      <li>📧 <strong>Feedback Form</strong><br><span class="muted">Submit suggestions and questions using the form on this page.</span></li>
+    </ul>
+    <a class="pill-button" href="https://t.me/studybuddy_irdina_bot" target="_blank" rel="noopener">Open Telegram</a>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
