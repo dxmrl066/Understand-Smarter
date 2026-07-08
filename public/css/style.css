@@ -472,7 +472,10 @@ textarea {
   border: 1px solid rgba(123, 184, 255, 0.18);
   box-shadow: 0 20px 50px rgba(78, 97, 202, 0.14);
   animation: popup 0.28s ease-out;
-  overflow: hidden;
+  
+  /* --- CHANGED LINES --- */
+  max-height: 90vh;        /* Limits the modal height to 90% of your screen */
+  overflow-y: auto;        /* Adds a scrollbar ONLY when content exceeds the max-height */
 }
 
 .modal-body {

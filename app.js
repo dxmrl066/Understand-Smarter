@@ -1,7 +1,60 @@
+require('dotenv').config();
+
 const express = require('express');
+const http = require('http');
+const https = require('https');
 const path = require('path');
+const generateQuiz = require("./services/quizGenerator");
+
 
 const app = express();
+const FEEDBACK_WEBHOOK_URL = process.env.FEEDBACK_WEBHOOK_URL || 'https://n8ngc.codeblazar.org/webhook/Feedback';
+
+function submitFeedbackToWebhook(payload) {
+  return new Promise((resolve, reject) => {
+    let parsedUrl;
+
+    try {
+      parsedUrl = new URL(FEEDBACK_WEBHOOK_URL);
+    } catch (error) {
+      reject(new Error('The feedback webhook URL is invalid.'));
+      return;
+    }
+
+    const data = JSON.stringify(payload);
+    const transport = parsedUrl.protocol === 'https:' ? https : http;
+    const options = {
+      hostname: parsedUrl.hostname,
+      port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+      path: `${parsedUrl.pathname}${parsedUrl.search}`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data)
+      }
+    };
+
+    const req = transport.request(options, (res) => {
+      let responseBody = '';
+      res.setEncoding('utf8');
+      res.on('data', (chunk) => {
+        responseBody += chunk;
+      });
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+          resolve({ statusCode: res.statusCode, body: responseBody });
+        } else {
+          reject(new Error(`Webhook request failed with status ${res.statusCode}: ${responseBody}`));
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.write(data);
+    req.end();
+  });
+}
+
 const DEFAULT_PORT = 3000;
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : DEFAULT_PORT;
 
@@ -9,6 +62,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // <-- Add this line
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
@@ -99,7 +153,7 @@ app.get('/contact', (req, res) => {
   });
 });
 
-app.post('/contact', (req, res) => {
+app.post('/contact', async (req, res) => {
   const { name, email, message } = req.body;
   const trimmedName = (name || '').trim();
   const trimmedEmail = (email || '').trim();
@@ -113,6 +167,9 @@ app.post('/contact', (req, res) => {
     errors.push('Email is required.');
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
     errors.push('Please enter a valid email address.');
+  }
+  if (!trimmedMessage) {
+    errors.push('Message is required.');
   }
 
   if (errors.length) {
@@ -129,20 +186,85 @@ app.post('/contact', (req, res) => {
     });
   }
 
-  res.render('pages/contact', {
-    page: 'contact',
-    title: 'Contact & Feedback',
-    description: 'Share feedback or ask for help.',
-    success: true,
-    values: {
-      name: '',
-      email: '',
-      message: ''
-    }
-  });
+  try {
+    await submitFeedbackToWebhook({
+      name: trimmedName,
+      email: trimmedEmail,
+      message: trimmedMessage
+    });
+
+    return res.render('pages/contact', {
+      page: 'contact',
+      title: 'Contact & Feedback',
+      description: 'Share feedback or ask for help.',
+      success: true,
+      values: {
+        name: '',
+        email: '',
+        message: ''
+      }
+    });
+  } catch (error) {
+    console.error('Feedback webhook submission failed:', error);
+
+    return res.render('pages/contact', {
+      page: 'contact',
+      title: 'Contact & Feedback',
+      description: 'Share feedback or ask for help.',
+      errors: ['We could not send your feedback right now. Please try again.'],
+      values: {
+        name: trimmedName,
+        email: trimmedEmail,
+        message: trimmedMessage
+      }
+    });
+  }
 });
 
-const server = app.listen(port, () => {
+
+// ==========================
+// AI Quiz API
+// ==========================
+
+app.post('/api/quiz', async (req, res) => {
+  try {
+    const { subject, difficulty, count, type } = req.body;
+
+    if (!subject) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select a module.'
+      });
+    }
+
+    const quiz = await generateQuiz(
+      subject,
+      difficulty,
+      count,
+      type
+    );
+
+    res.json({
+      success: true,
+      quiz
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to generate quiz.'
+    });
+  }
+});
+
+
+// ==========================
+// Start Server
+// ==========================
+
+const server = app.listen(port, "0.0.0.0", () => {
   console.log(`Website running at http://localhost:${port}`);
 });
 
@@ -154,6 +276,12 @@ server.on('error', (error) => {
     }
     process.exit(1);
   }
+
   console.error('Server error:', error);
   process.exit(1);
+});
+
+app.use((err, req, res, next) => {
+  console.error("ERROR:", err.stack);
+  res.status(500).send(err.stack);
 });

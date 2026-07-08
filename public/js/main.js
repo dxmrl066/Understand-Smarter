@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const quizTopic = document.getElementById('quiz-topic');
   const quizDifficulty = document.getElementById('quiz-difficulty');
   const quizGenerateBtn = document.getElementById('quiz-generate-btn');
+  const loading = document.getElementById('loading'); // <-- FIXED: Added missing loading element selector
   const quizModal = document.getElementById('quiz-modal');
   const quizBackdrop = document.getElementById('quiz-modal-backdrop');
   const quizClose = document.getElementById('quiz-modal-close');
@@ -57,60 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const badge250 = document.getElementById('badge-250');
   const badge500 = document.getElementById('badge-500');
 
-  // ===== QUIZ TEMPLATES =====
-  const quizTemplates = {
-    easy: (topic) => [
-      {
-        prompt: `Which statement best describes ${topic}?`,
-        choices: [`A simple definition`, `A random fact`, `A secret code`],
-        correct: 0
-      },
-      {
-        prompt: `What is a good first step when revising ${topic}?`,
-        choices: [`Review your notes`, `Skip it`, `Ask a friend to explain nothing`],
-        correct: 0
-      },
-      {
-        prompt: `How does ${topic} help your studies?`,
-        choices: [`It builds understanding`, `It makes food`, `It changes the weather`],
-        correct: 0
-      }
-    ],
-    medium: (topic) => [
-      {
-        prompt: `Why is understanding ${topic} important for your exam?`,
-        choices: [`It helps solve problems`, `It looks nice`, `It makes your phone run faster`],
-        correct: 0
-      },
-      {
-        prompt: `Which tool is most useful for ${topic}?`,
-        choices: [`Notes and examples`, `A magic wand`, `A random video`],
-        correct: 0
-      },
-      {
-        prompt: `What is one idea you should practise for ${topic}?`,
-        choices: [`Core concepts`, `Fancy colors`, `The answer to everything`],
-        correct: 0
-      }
-    ],
-    hard: (topic) => [
-      {
-        prompt: `Describe a real application of ${topic}.`,
-        choices: [`A clear practical example`, `A made-up story`, `A math trick`],
-        correct: 0
-      },
-      {
-        prompt: `What should you do after a ${topic} practice attempt?`,
-        choices: [`Check what you missed`, `Forget it`, `Repeat without pause`],
-        correct: 0
-      },
-      {
-        prompt: `How can ${topic} become easier over time?`,
-        choices: [`With steady review`, `By guessing`, `By ignoring it`],
-        correct: 0
-      }
-    ]
-  };
+  // Internal variable to track if current quiz was already scored and captured
+  let isQuizSubmitted = false;
 
   // ===== PROGRESS RING ANIMATION =====
   function setRingValue(value) {
@@ -151,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     badgeCount.textContent = badgeInfo.unlocked.length;
     activityCount.textContent = actCount;
     completedGoalsCount.textContent = completedGoals.length;
-    quizzesTakenCount.textContent = gamification.data.quizzesTaken;
+    quizzesTakenCount.textContent = gamification.data.quizzesTaken || 0;
 
     // Update progress ring
     animateProgress(xpProgress.percentage);
@@ -215,8 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const completed = gamification.getCompletedGoals().length;
-    const pending = gamification.getPendingGoals().length;
-
     goalsStatus.textContent = `${completed}/${goals.length} completed`;
     goalCompletionCount.textContent = completed;
 
@@ -226,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="goal-content">
             <input type="checkbox" class="goal-checkbox" data-goal-id="${goal.id}" ${goal.completed ? 'checked' : ''} />
             <span class="goal-text">${goal.text}</span>
-            <span class="goal-xp">+${gamification.GOAL_XP} XP</span>
+            <span class="goal-xp">+${gamification.GOAL_XP || 10} XP</span>
           </div>
           <button class="goal-delete" data-goal-id="${goal.id}" aria-label="Delete goal">×</button>
         </li>
@@ -241,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const result = gamification.completeGoal(goalId);
           if (result) {
             showNotification(`Goal completed! +${result.xpEarned} XP`);
-            if (result.newBadges.length > 0) {
+            if (result.newBadges && result.newBadges.length > 0) {
               result.newBadges.forEach(badge => {
                 showNotification(`🎉 Badge unlocked at ${badge.threshold} XP!`);
               });
@@ -280,123 +227,197 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ===== QUIZ MANAGEMENT =====
-  function buildQuizList(topic, difficulty) {
-    const normalizedTopic = topic.trim() || 'your topic';
-    return quizTemplates[difficulty](normalizedTopic);
-  }
-
   function showQuizModal() {
-    quizModal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    if (quizModal) {
+      quizModal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
   }
 
   function hideQuizModal() {
-    quizModal.classList.add('hidden');
-    document.body.style.overflow = '';
+    if (quizModal) {
+      quizModal.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
   }
 
-  function renderQuizPreview() {
-    const topic = quizTopic.value.trim() || 'your topic';
-    const difficulty = quizDifficulty.value;
-    const questions = buildQuizList(topic, difficulty);
+  function displayQuiz(questions) {
+    const safeQuestions = Array.isArray(questions) ? questions : [];
 
-    quizTitle.textContent = `${topic} - ${difficulty} Quiz`;
-    
-    const xpPerCorrect = {
-      easy: 5,
-      medium: 10,
-      hard: 15
-    }[difficulty];
-    
-    quizDescription.textContent = `Try ${questions.length} questions. Earn ${xpPerCorrect} XP for each correct answer.`;
-    
-    quizQuestionList.innerHTML = questions
-      .map((item, index) => `
-        <li data-correct="${item.correct}">
-          <strong>${index + 1}. ${item.prompt}</strong>
-          ${item.choices
-            .map(
-              (choice, choiceIndex) => `
-                <label>
-                  <input type="radio" name="question-${index}" value="${choiceIndex}" />
-                  ${choice}
-                </label>`
-            )
-            .join('')}
-        </li>`
-      )
-      .join('');
+    if (safeQuestions.length === 0) {
+      alert("The quiz generator returned no questions.");
+      return;
+    }
 
-    resultPanel.classList.add('hidden');
-    closeResultBtn.classList.add('hidden');
-    finishQuizBtn.textContent = 'Submit answers';
-    quizScoreText.textContent = 'Score: 0 / 3';
-    quizXPEarned.textContent = 'XP earned: 0';
-    quizBadgeMessage.textContent = 'Good job!';
+    // UPDATED: Adjusted branding text to display Gemini AI title seamlessly
+    if (quizTitle) quizTitle.textContent = "Your Gemini AI Quiz";
+    if (quizDescription) quizDescription.textContent = `${safeQuestions.length} AI-generated questions`;
+    
+    quizQuestionList.innerHTML = "";
+    isQuizSubmitted = false; // Reset submit lock out
 
+    safeQuestions.forEach((q, index) => {
+      let html = `
+        <li data-answer="${q.answer}">
+          <strong class="quiz-question-text">${index + 1}. ${q.question}</strong>
+          <div class="options-container" style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+      `;
+
+      q.options.forEach(option => {
+        html += `
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input
+              type="radio"
+              name="question-${index}"
+              value="${option}">
+            <span>${option}</span>
+          </label>
+        `;
+      });
+
+      html += `</div></li>`;
+      quizQuestionList.innerHTML += html;
+    });
+
+    if (resultPanel) resultPanel.classList.add("hidden");
+    if (closeResultBtn) closeResultBtn.classList.add("hidden");
+    if (finishQuizBtn) finishQuizBtn.textContent = "Submit Answers";
     showQuizModal();
   }
 
-  function computeQuizScore() {
-    const questions = quizQuestionList.querySelectorAll('li');
+  async function generateAIQuiz() {
+    const subject = quizTopic.value;
+    const difficulty = quizDifficulty.value;
+    const count = document.getElementById("quiz-count").value;
+    const type = document.getElementById("quiz-type").value;
+
+    if (!subject) {
+      alert("Please select a module.");
+      return;
+    }
+
+    // Toggle loader styles gracefully to prevent submission flooding
+    quizGenerateBtn.disabled = true;
+    quizGenerateBtn.textContent = "Generating Quiz...";
+    if (loading) loading.classList.remove('hidden');
+
+    try {
+      // Hit your node.js backend internal API router endpoint seamlessly
+      const response = await fetch("/api/quiz", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          subject,
+          difficulty,
+          count,
+          type
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to generate quiz.");
+      }
+
+      if (!Array.isArray(data.quiz) || data.quiz.length === 0) {
+        throw new Error("The quiz generator returned an empty set of questions.");
+      }
+
+      displayQuiz(data.quiz);
+
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Failed to connect to backend server. Ensure node app and your API keys are working.");
+    } finally {
+      quizGenerateBtn.disabled = false;
+      quizGenerateBtn.textContent = "🚀 Generate AI Quiz";
+      if (loading) loading.classList.add('hidden');
+    }
+  }
+
+  function updateQuizResult() {
+    // If user clicks complete button twice, don't let them farm infinite XP
+    if (isQuizSubmitted) {
+      hideQuizModal();
+      return;
+    }
+
+    const questionItems = Array.from(quizQuestionList.querySelectorAll('li'));
+    if (questionItems.length === 0) return;
+
     let score = 0;
 
-    questions.forEach((item) => {
+    questionItems.forEach((item) => {
       const selected = item.querySelector('input[type="radio"]:checked');
-      const correct = Number(item.dataset.correct);
-      if (selected && Number(selected.value) === correct) {
+      const correctAnswer = item.dataset.answer;
+
+      // Color feedback markers for structural elements
+      const labels = item.querySelectorAll('label');
+      labels.forEach(lbl => {
+        const rad = lbl.querySelector('input');
+        if (rad.value === correctAnswer) {
+          lbl.style.color = "#155724";
+          lbl.style.fontWeight = "bold";
+        }
+        if (rad.checked && rad.value !== correctAnswer) {
+          lbl.style.color = "#721c24";
+        }
+      });
+
+      if (selected && selected.value === correctAnswer) {
         score += 1;
       }
     });
 
-    return score;
-  }
+    const total = questionItems.length;
+    const percentage = total ? Math.round((score / total) * 100) : 0;
 
-  function updateQuizResult() {
-    const score = computeQuizScore();
-    const total = quizQuestionList.querySelectorAll('li').length;
-    const difficulty = quizDifficulty.value;
+    // Calculate dynamic XP reward base (e.g., 10XP per correct answer)
+    const xpReward = score * 10;
+
+    // AWARD GAMIFICATION POINTS HERE
+    if (xpReward > 0) {
+      gamification.data.totalXP = (gamification.data.totalXP || 0) + xpReward;
+      showNotification(`Quiz Completed! +${xpReward} XP awarded!`);
+    }
+    gamification.data.quizzesTaken = (gamification.data.quizzesTaken || 0) + 1;
     
-    const result = gamification.completeQuiz(difficulty, score, total);
-    const xpEarned = result.xpEarned;
-    const newBadges = result.newBadges;
+    // Save progress updates
+    if (typeof gamification.saveData === 'function') {
+      gamification.saveData();
+    }
+    updateProgressDisplay();
 
-    const percentage = Math.round((score / total) * 100);
-    const messages = {
-      100: 'Perfect score! You are a master!',
-      80: 'Great job! Well done!',
-      60: 'Good effort! Keep practicing!',
-      0: 'Keep trying! You will improve!'
-    };
-
-    let message = messages[0];
-    if (percentage === 100) message = messages[100];
-    else if (percentage >= 80) message = messages[80];
-    else if (percentage >= 60) message = messages[60];
-
-    quizScoreText.textContent = `Score: ${score} / ${total}`;
-    quizXPEarned.textContent = `XP earned: ${xpEarned}`;
-    quizBadgeMessage.textContent = message;
-    
-    resultPanel.classList.remove('hidden');
-    closeResultBtn.classList.remove('hidden');
-    finishQuizBtn.textContent = 'Submit answers';
-
-    // Show badge notifications
-    if (newBadges.length > 0) {
-      newBadges.forEach(badge => {
-        showNotification(`🎉 Badge unlocked at ${badge.threshold} XP!`);
-      });
+    // Show results values in UI panel
+    if (quizScoreText) quizScoreText.textContent = `Score: ${score}/${total} (${percentage}%)`;
+    if (quizXPEarned) quizXPEarned.textContent = `XP Earned: +${xpReward} XP`;
+    if (quizBadgeMessage) {
+      quizBadgeMessage.textContent = percentage === 100
+        ? 'Perfect! Great job!'
+        : percentage >= 70
+          ? 'Nice work!'
+          : 'Keep practicing!';
     }
 
-    updateProgressDisplay();
+    if (resultPanel) resultPanel.classList.remove('hidden');
+    if (closeResultBtn) closeResultBtn.classList.remove('hidden');
+    if (finishQuizBtn) finishQuizBtn.textContent = 'Close Window';
+    isQuizSubmitted = true;
   }
 
-  quizGenerateBtn.addEventListener('click', renderQuizPreview);
-  finishQuizBtn.addEventListener('click', updateQuizResult);
-  quizClose.addEventListener('click', hideQuizModal);
-  quizBackdrop.addEventListener('click', hideQuizModal);
-  closeResultBtn.addEventListener('click', hideQuizModal);
+  if (quizGenerateBtn) {
+    quizGenerateBtn.addEventListener("click", generateAIQuiz);
+  } else {
+    console.error('quizGenerateBtn element is missing');
+  }
+
+  if (finishQuizBtn) finishQuizBtn.addEventListener("click", updateQuizResult);
+  if (quizClose) quizClose.addEventListener("click", hideQuizModal);
+  if (quizBackdrop) quizBackdrop.addEventListener("click", hideQuizModal);
+  if (closeResultBtn) closeResultBtn.addEventListener("click", hideQuizModal);
 
   // ===== NOTIFICATIONS =====
   function showNotification(message) {

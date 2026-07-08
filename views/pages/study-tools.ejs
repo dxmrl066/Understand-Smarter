@@ -1,154 +1,572 @@
-<%- include('../partials/header', { page: 'study-tools', title: 'Study Tools', description: 'Practical tools for calm, steady learning.' }) %>
+<%- include('../partials/header', {
+  page: 'study-tools',
+  title: 'Study Tools',
+  description: 'Practical tools for calm, steady learning.'
+}) %>
 
 <section class="hero-card compact">
   <div class="hero-copy">
-    <p class="eyebrow">Study tools</p>
-    <h1>Steady progress starts with a playful plan</h1>
-    <p>Use the interactive cards below to set a study routine, preview a quick quiz, and watch progress grow with streaks, badges, and friendly reminders.</p>
+    <p class="eyebrow">Study Tools</p>
+
+    <h1>Learn Smarter with AI</h1>
+
+    <p>
+      Set study goals, generate AI quizzes based on your modules,
+      earn XP and unlock badges while revising.
+    </p>
   </div>
 </section>
 
 <section class="section-grid">
+
+  <!-- ========================= -->
+  <!-- STUDY REMINDERS -->
+  <!-- ========================= -->
+
   <article class="card tool-card">
+
     <div class="tool-head">
+
       <div>
-        <p class="eyebrow">Study reminders</p>
-        <h3>Add and track study goals</h3>
+        <p class="eyebrow">Study Reminder</p>
+        <h3>Add and complete study goals</h3>
       </div>
+
       <div class="streak-chip" id="study-streak-chip">
         <span class="bubble-dot"></span>
-        <strong id="goal-completion-count">0</strong> completed
+        <strong id="goal-completion-count">0</strong>
+        completed
       </div>
+
     </div>
 
     <form id="goal-form" class="tool-form">
+
       <label>
-        Study goal
-        <input type="text" id="goal-input" placeholder="e.g. Review chapter 3, Practice coding problems" />
+        Study Goal
+
+        <input
+          type="text"
+          id="goal-input"
+          placeholder="Example: Revise Chapter 3"
+        />
+
       </label>
+
       <div class="form-actions">
-        <button type="button" class="pill-button small" id="add-goal-btn">Add goal +10 XP</button>
+
+        <button
+          type="button"
+          class="pill-button small"
+          id="add-goal-btn">
+
+          + Add Goal (+10 XP)
+
+        </button>
+
       </div>
+
     </form>
 
     <div class="goals-panel">
+
       <div class="goals-header">
-        <h4>Your goals</h4>
-        <span class="mini-pill" id="goals-status">No goals yet</span>
+
+        <h4>Your Goals</h4>
+
+        <span
+          class="mini-pill"
+          id="goals-status">
+
+          No goals yet
+
+        </span>
+
       </div>
-      <ul id="goals-list" class="goals-list">
-        <li class="empty-state">No goals yet. Add one to start earning XP!</li>
+
+      <ul
+        id="goals-list"
+        class="goals-list">
+
+        <li class="empty-state">
+          No study goals yet.
+        </li>
+
       </ul>
+
     </div>
+
   </article>
 
+    <!-- ========================= -->
+  <!-- AI QUIZ GENERATOR -->
+  <!-- ========================= -->
+
   <article class="card tool-card">
+
     <div class="tool-head">
+
       <div>
-        <p class="eyebrow">Quiz generation</p>
-        <h3>Earn XP through practice quizzes.</h3>
+
+        <p class="eyebrow">
+          AI Quiz Generator
+        </p>
+
+        <h3>
+          Generate unlimited quizzes
+        </h3>
+
       </div>
-      <div class="badge-pill" id="quiz-badge-pill">Test your knowledge</div>
+
+      <div
+        class="badge-pill"
+        id="quiz-badge-pill">
+
+        🤖 Gemini AI
+
+      </div>
+
     </div>
 
-    <form id="quiz-form" class="tool-form">
+    <form
+      id="quiz-form"
+      class="tool-form">
+
       <label>
-        Topic
-        <input type="text" id="quiz-topic" placeholder="e.g. Circuits, Calculus, Python" />
-      </label>
-      <label>
-        Difficulty
-        <select id="quiz-difficulty">
-          <option value="easy">Easy (5 XP per correct)</option>
-          <option value="medium" selected>Medium (10 XP per correct)</option>
-          <option value="hard">Hard (15 XP per correct)</option>
+
+        Module
+
+        <select id="quiz-topic">
+
+          <option value="">
+            -- Select Module --
+          </option>
+
+          <option value="Programming Fundamentals">
+            Programming Fundamentals
+          </option>
+
+          <option value="Web Development">
+            Web Development
+          </option>
+
+          <option value="Object-Oriented Programming">
+            Object-Oriented Programming
+          </option>
+
+          <option value="Data Structures">
+            Data Structures
+          </option>
+
+          <option value="Database Systems">
+            Database Systems
+          </option>
+
+          <option value="Operating Systems">
+            Operating Systems
+          </option>
+
+          <option value="Computer Networks">
+            Computer Networks
+          </option>
+
+          <option value="Artificial Intelligence">
+            Artificial Intelligence
+          </option>
+
+          <option value="Cyber Security">
+            Cyber Security
+          </option>
+
         </select>
+
       </label>
-      <div class="form-actions">
-        <button type="button" class="pill-button small" id="quiz-generate-btn">Start quiz</button>
+
+      <label>
+
+        Difficulty
+
+        <select id="quiz-difficulty">
+
+          <option value="easy">
+            Easy
+          </option>
+
+          <option
+            value="medium"
+            selected>
+
+            Medium
+
+          </option>
+
+          <option value="hard">
+            Hard
+          </option>
+
+        </select>
+
+      </label>
+
+      <label>
+
+        Number of Questions
+
+        <select id="quiz-count">
+
+          <option value="5">
+            5 Questions
+          </option>
+
+          <option value="10">
+            10 Questions
+          </option>
+
+          <option value="15">
+            15 Questions
+          </option>
+
+        </select>
+
+      </label>
+
+      <label>
+
+        Quiz Type
+
+        <select id="quiz-type">
+
+          <option value="multiple-choice">
+            Multiple Choice
+          </option>
+
+          <option value="true-false">
+            True / False
+          </option>
+
+          <option value="mixed">
+            Mixed
+          </option>
+
+        </select>
+
+      </label>
+
+      <div class="form-actions" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+
+        <!-- Added the missing loading container element to fix the classList error -->
+        <div id="loading" class="hidden" style="text-align: center; font-style: italic; color: #666; margin-bottom: 4px;">
+          Generating questions with Gemini AI...
+        </div>
+
+        <button
+          type="button"
+          id="quiz-generate-btn"
+          class="pill-button">
+
+          🚀 Generate AI Quiz
+
+        </button>
+
       </div>
+
     </form>
 
     <div class="quiz-hint">
-      <p>Choose a topic and difficulty. Earn XP for each correct answer!</p>
+
+      <p>
+
+        Select your module and difficulty.
+
+        Every click generates a brand-new quiz using Gemini AI.
+
+      </p>
+
     </div>
+
   </article>
 
+    <!-- ========================= -->
+  <!-- PROGRESS TRACKER -->
+  <!-- ========================= -->
+
   <article class="card tool-card">
+
     <div class="tool-head">
+
       <div>
-        <p class="eyebrow">Progress tracker</p>
-        <h3>Watch your effort add up.</h3>
+        <p class="eyebrow">Progress Tracker</p>
+        <h3>Watch your progress grow</h3>
       </div>
+
       <div class="stat-pill">
-        <strong id="current-level">Level 1</strong>
+        <strong id="current-level">
+          Level 1
+        </strong>
       </div>
+
     </div>
 
     <div class="progress-card">
-      <div class="progress-ring" id="progress-ring" data-target="0">
-        <span id="progress-value">0%</span>
+
+      <div
+        class="progress-ring"
+        id="progress-ring"
+        data-target="0">
+
+        <span id="progress-value">
+          0%
+        </span>
+
       </div>
+
       <div class="progress-meta">
+
         <div class="mini-card stat-card">
-          <span class="stat-label">XP</span>
-          <strong id="xp-points">0</strong> / <span id="xp-needed">100</span>
+
+          <span class="stat-label">
+            XP
+          </span>
+
+          <strong id="xp-points">
+            0
+          </strong>
+
+          /
+
+          <span id="xp-needed">
+            100
+          </span>
+
         </div>
+
         <div class="mini-card stat-card">
-          <span class="stat-label">Badges</span>
-          <strong id="badge-count">0</strong>
+
+          <span class="stat-label">
+            Badges
+          </span>
+
+          <strong id="badge-count">
+            0
+          </strong>
+
         </div>
+
         <div class="mini-card stat-card">
-          <span class="stat-label">Total activities</span>
-          <strong id="activity-count">0</strong>
+
+          <span class="stat-label">
+            Quizzes
+          </span>
+
+          <strong id="quizzes-taken">
+            0
+          </strong>
+
         </div>
+
       </div>
+
     </div>
 
     <div class="stats-grid">
-      <div class="stat-chip" id="next-badge-chip">
-        <strong>100</strong> XP to unlock badge
-      </div>
+
       <div class="stat-chip">
-        <strong id="completed-goals">0</strong> goals completed
+
+        <strong id="completed-goals">
+          0
+        </strong>
+
+        Goals Completed
+
       </div>
+
       <div class="stat-chip">
-        <strong id="quizzes-taken">0</strong> quizzes taken
+
+        <strong id="activity-count">
+          0
+        </strong>
+
+        Total Activities
+
       </div>
+
+      <div
+        class="stat-chip"
+        id="next-badge-chip">
+
+        <strong>
+          100 XP
+        </strong>
+
+        Next Badge
+
+      </div>
+
     </div>
-    <p class="milestone-message" id="milestone-message">Complete study goals and quizzes to earn XP and unlock badges!</p>
+
+    <p
+      class="milestone-message"
+      id="milestone-message">
+
+      Complete quizzes and study goals to level up!
+
+    </p>
+
   </article>
+
 </section>
 
-<div class="modal hidden" id="quiz-modal" role="dialog" aria-modal="true" aria-labelledby="quiz-modal-title">
-  <div class="modal-backdrop" id="quiz-modal-backdrop"></div>
-  <div class="modal-content">
-    <button class="modal-close" id="quiz-modal-close" aria-label="Close quiz preview">&times;</button>
-    <div class="modal-body">
-      <p class="eyebrow">Quiz challenge</p>
-      <h2 id="quiz-modal-title">Ready for a quick challenge?</h2>
-      <p id="quiz-modal-description">A short quiz appears here once you choose a topic and difficulty.</p>
-      <ol id="quiz-question-list" class="quiz-list"></ol>
-      <div class="result-panel hidden" id="quiz-result-panel">
-        <p class="result-score" id="quiz-score-text">Score: 0 / 3</p>
-        <p id="quiz-xp-earned">XP earned: 0</p>
-        <p id="quiz-badge-message">Great effort!</p>
-      </div>
-      <div class="modal-actions">
-        <button class="pill-button small" id="finish-quiz-btn">Submit answers</button>
-        <button class="pill-button small secondary hidden" id="close-result-btn">Close</button>
-      </div>
-    </div>
+<!-- ========================= -->
+<!-- QUIZ MODAL -->
+<!-- ========================= -->
+
+<div
+  class="modal hidden"
+  id="quiz-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="quiz-modal-title">
+
+  <div
+    class="modal-backdrop"
+    id="quiz-modal-backdrop">
   </div>
+
+  <div class="modal-content">
+
+    <button
+      class="modal-close"
+      id="quiz-modal-close">
+
+      &times;
+
+    </button>
+
+    <div class="modal-body">
+
+      <p class="eyebrow">
+        AI Quiz
+      </p>
+
+      <h2 id="quiz-modal-title">
+
+        Your Quiz
+
+      </h2>
+
+      <p id="quiz-modal-description">
+        Click "Generate AI Quiz" to start.
+      </p>
+
+      <ol
+        id="quiz-question-list"
+        class="quiz-list">
+
+      </ol>
+
+      <div
+        id="quiz-result-panel"
+        class="result-panel hidden">
+
+        <p
+          id="quiz-score-text"
+          class="result-score">
+
+          Score: 0
+
+        </p>
+
+        <p id="quiz-xp-earned">
+
+          XP Earned: 0
+
+        </p>
+
+        <p id="quiz-badge-message">
+
+          Nice work!
+
+        </p>
+
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          class="pill-button"
+          id="finish-quiz-btn">
+
+          Submit Answers
+
+        </button>
+
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
+<!-- ========================= -->
+<!-- BADGES -->
+<!-- ========================= -->
+
 <section class="section-block">
-  <h2>Badges unlock at</h2>
-  <div class="feature-list" id="badge-milestones">
-    <div class="feature-pill" id="badge-100">🎯 100 XP</div>
-    <div class="feature-pill" id="badge-250">⭐ 250 XP</div>
-    <div class="feature-pill" id="badge-500">👑 500 XP</div>
+
+  <h2>
+
+    Badge Milestones
+
+  </h2>
+
+  <div
+    class="feature-list"
+    id="badge-milestones">
+
+    <div
+      class="feature-pill"
+      id="badge-100">
+
+      🎯 Beginner
+      <br>
+      100 XP
+
+    </div>
+
+    <div
+      class="feature-pill"
+      id="badge-250">
+
+      ⭐ Intermediate
+      <br>
+      250 XP
+
+    </div>
+
+    <div
+      class="feature-pill"
+      id="badge-500">
+
+      👑 Master
+      <br>
+      500 XP
+
+    </div>
+
+    <div
+      class="feature-pill"
+      id="badge-1000">
+
+      🏆 AI Champion
+      <br>
+      1000 XP
+
+    </div>
+
   </div>
+
 </section>
 
 <%- include('../partials/footer') %>
