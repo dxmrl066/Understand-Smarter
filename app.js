@@ -8,7 +8,7 @@ const generateQuiz = require("./services/quizGenerator");
 
 
 const app = express();
-const FEEDBACK_WEBHOOK_URL = process.env.FEEDBACK_WEBHOOK_URL || 'https://n8ngc.codeblazar.org/webhook/Feedback';
+const FEEDBACK_WEBHOOK_URL = (process.env.FEEDBACK_WEBHOOK_URL || 'https://n8ngc.codeblazar.org/webhook/Feedback').trim();
 
 function submitFeedbackToWebhook(payload) {
   return new Promise((resolve, reject) => {
